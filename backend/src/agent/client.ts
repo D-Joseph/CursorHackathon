@@ -115,7 +115,9 @@ export class MiniMaxClient {
           type: z.string(),
           text: z.string(),
         })).safeParse(messageData.reasoning_details);
-        chatResponse.reasoning_details = reasoningResult.success ? reasoningResult.data : undefined;
+        chatResponse.reasoning_details = reasoningResult.success && reasoningResult.data
+          ? reasoningResult.data.map(r => ({ type: r.type || '', text: r.text || '' }))
+          : undefined;
       }
     }
 

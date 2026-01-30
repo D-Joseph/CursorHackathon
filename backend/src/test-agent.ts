@@ -3,8 +3,8 @@
  */
 
 import { createAgent } from './agent';
-import { validateConfig, hasApiKey } from './config';
-import { createMiniMaxChatModel, calculatorTool } from './model';
+import { hasApiKey } from './agent/config';
+import { calculatorTool } from './agent/model';
 
 async function main() {
   console.log('=== MiniMax Agent Test ===\n');
@@ -18,7 +18,7 @@ async function main() {
     console.log('Please set your MiniMax API key in .env file');
     return;
   }
-  console.log('✓ Configuration validated\n');
+  console.log('Configuration validated\n');
 
   // Test 1: Basic chat
   console.log('--- Test 1: Basic Chat ---');
@@ -38,14 +38,13 @@ async function main() {
   console.log('--- Test 2: Tool Call (Calculator) ---');
   const agentWithTools = createAgent({
     systemMessage: 'You are a helpful assistant with access to tools. Use the calculator tool for math questions.',
-    maxToolIterations: 3, // Reduced to avoid long waits
+    maxToolIterations: 3,
   });
   agentWithTools.addTool(calculatorTool);
   console.log('Tool registered: calculator\n');
 
   try {
     console.log('User: "What is 42 * 42?"');
-    // Add timeout wrapper
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Request timeout after 20s')), 20000)
     );

@@ -10,6 +10,7 @@ import friendRoutes from './routes/friendRoutes';
 import giftRoutes from './routes/giftRoutes';
 import userRoutes from './routes/userRoutes';
 import promptRoutes from './routes/promptRoutes';
+import agentRoutes from './routes/agentRoutes';
 import { ApiResponse } from './types';
 import { initializeDatabase, seedDatabase } from './database/schema';
 
@@ -50,6 +51,7 @@ app.use('/api/friends', friendRoutes);
 app.use('/api/gifts', giftRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/prompt', promptRoutes);
+app.use('/api/agent', agentRoutes);
 
 // API documentation endpoint
 app.get('/api', (_req: Request, res: Response) => {
@@ -96,6 +98,13 @@ app.get('/api', (_req: Request, res: Response) => {
       promptProcess: 'POST /api/prompt/process',
       promptGiftSuggestions: 'POST /api/prompt/gift-suggestions',
       promptReachout: 'POST /api/prompt/reachout',
+      agent: {
+        health: 'GET /api/agent/health',
+        chat: 'POST /api/agent/chat',
+        stream: 'POST /api/agent/stream',
+        sessions: 'GET /api/agent/sessions',
+        clearSession: 'DELETE /api/agent/session/:sessionId',
+      },
     },
     documentation: {
       searchGifts: {

@@ -118,7 +118,7 @@ export class Agent {
     while (iterations < this.maxToolIterations) {
       // Convert tools to API format
       const toolsArray: { type: 'function'; function: { name: string; description: string; parameters: Record<string, unknown> } }[] = [];
-      for (const tool of this.tools.values()) {
+      for (const tool of Array.from(this.tools.values())) {
         toolsArray.push({
           type: 'function',
           function: {
