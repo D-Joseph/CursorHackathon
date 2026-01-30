@@ -34,6 +34,7 @@ export interface AgentOptionsWithTools extends AgentOptions {
 export class Agent {
   private client: MiniMaxClient;
   private systemMessage: string;
+  private friendContext: string;
   private conversation: Message[];
   private maxHistoryLength: number;
   private tools: Map<string, ToolDefinition>;
@@ -46,6 +47,7 @@ export class Agent {
 
     this.client = createClient(validated.apiKey);
     this.systemMessage = validated.systemMessage || '';
+    this.friendContext = '';
     this.conversation = [];
     this.maxHistoryLength = validated.maxHistoryLength || 50;
     this.maxToolIterations = validated.maxToolIterations || 10;
@@ -82,8 +84,14 @@ export class Agent {
     // Build messages array
     const messages: Message[] = [];
 
-    if (this.systemMessage) {
-      messages.push({ role: 'system', content: this.systemMessage });
+    // Build context from system message and friend context
+    let fullContext = this.systemMessage;
+    if (this.friendContext) {
+      fullContext += '\n\n=== CURRENT FRIEND DATA ===\n' + this.friendContext;
+    }
+
+    if (fullContext) {
+      messages.push({ role: 'system', content: fullContext });
     }
 
     // Add conversation history
@@ -259,8 +267,14 @@ export class Agent {
     // Build messages array
     const messages: Message[] = [];
 
-    if (this.systemMessage) {
-      messages.push({ role: 'system', content: this.systemMessage });
+    // Build context from system message and friend context
+    let fullContext = this.systemMessage;
+    if (this.friendContext) {
+      fullContext += '\n\n=== CURRENT FRIEND DATA ===\n' + this.friendContext;
+    }
+
+    if (fullContext) {
+      messages.push({ role: 'system', content: fullContext });
     }
 
     // Add conversation history
@@ -313,8 +327,14 @@ export class Agent {
     // Build messages array
     const messages: Message[] = [];
 
-    if (this.systemMessage) {
-      messages.push({ role: 'system', content: this.systemMessage });
+    // Build context from system message and friend context
+    let fullContext = this.systemMessage;
+    if (this.friendContext) {
+      fullContext += '\n\n=== CURRENT FRIEND DATA ===\n' + this.friendContext;
+    }
+
+    if (fullContext) {
+      messages.push({ role: 'system', content: fullContext });
     }
 
     // Add conversation history
@@ -384,14 +404,15 @@ export class Agent {
    */
   private trimHistory(): void {
     // Calculate max messages we can store (subtract 1 for system message if present)
-    const maxMessages = this.systemMessage
+    const hasSystemContext = this.systemMessage || this.friendContext;
+    const maxMessages = hasSystemContext
       ? this.maxHistoryLength - 1
       : this.maxHistoryLength;
 
     if (this.conversation.length > maxMessages) {
       // Keep system message and the most recent messages
-      const systemMessage = this.systemMessage
-        ? [{ role: 'system' as const, content: this.systemMessage }]
+      const systemMessage = hasSystemContext
+        ? [{ role: 'system' as const, content: this.systemMessage + (this.friendContext ? '\n\n=== CURRENT FRIEND DATA ===\n' + this.friendContext : '') }]
         : [];
       const recentMessages = this.conversation.slice(-maxMessages);
       this.conversation = [...systemMessage, ...recentMessages];
@@ -410,6 +431,13 @@ export class Agent {
    */
   setSystemMessage(message: string): void {
     this.systemMessage = message;
+  }
+
+  /**
+   * Set friend context for gift recommendations
+   */
+  setFriendContext(context: string): void {
+    this.friendContext = context;
   }
 
   /**

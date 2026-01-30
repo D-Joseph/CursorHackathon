@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { Agent, createAgent, hasApiKey, validateConfig, config } from '../agent';
+import { loadFriendContextForAgent } from '../utils/agentFriendLoader';
 
 const router = Router();
 
@@ -16,6 +17,7 @@ const ChatRequestSchema = z.object({
   sessionId: z.string().optional(),
   temperature: z.number().min(0).max(2).optional(),
   maxTokens: z.number().positive().optional(),
+  friendId: z.string().optional(),
 });
 
 /**
@@ -25,6 +27,7 @@ const StreamRequestSchema = z.object({
   message: z.string().min(1, 'Message is required'),
   systemMessage: z.string().optional(),
   sessionId: z.string().optional(),
+  friendId: z.string().optional(),
 });
 
 /**
@@ -66,6 +69,11 @@ router.post('/chat', async (req: Request, res: Response) => {
         maxTokens: body.maxTokens,
       });
       agents.set(sessionId, agent);
+    }
+
+    // Inject friend context if friendId is provided
+    if (body.friendId) {
+      loadFriendContextForAgent(agent, body.friendId);
     }
 
     const response = await agent.send(body.message);
@@ -112,6 +120,11 @@ router.post('/stream', async (req: Request, res: Response) => {
         systemMessage: body.systemMessage,
       });
       agents.set(sessionId, agent);
+    }
+
+    // Inject friend context if friendId is provided
+    if (body.friendId) {
+      loadFriendContextForAgent(agent, body.friendId);
     }
 
     // Set headers for streaming
