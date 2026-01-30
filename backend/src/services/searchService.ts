@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { searchShoppingItems, ShoppingSearchInput, ShoppingSearchOutput } from '../tools/shopping';
 
 /**
  * Web Search Service for finding gift ideas
@@ -31,6 +32,36 @@ export class SearchService {
       console.error('Search error:', error);
       throw new Error('Failed to perform web search');
     }
+  }
+
+  /**
+   * Search for shopping items using the dedicated shopping search service
+   * Provides structured results with pricing, ratings, and availability
+   *
+   * @param request - Search request with query, context, and filters
+   * @returns ShoppingSearchOutput with structured shopping items
+   */
+  async searchShopping(request: any): Promise<ShoppingSearchOutput> {
+    // Convert SearchRequest to ShoppingSearchInput
+    const shoppingInput: ShoppingSearchInput = {
+      searchTerm: request.query,
+      maxResults: request.limit || 10,
+      category: request.context?.personInterests?.[0],
+      priceRange: request.filters?.maxPrice ? { max: request.filters.maxPrice } : undefined,
+      sortBy: 'relevance',
+    };
+
+    // Enhance query with context
+    let enhancedTerm = request.query;
+    if (request.context?.personInterests?.length) {
+      enhancedTerm += ' ' + request.context.personInterests.join(' ');
+    }
+    if (request.context?.occasion) {
+      enhancedTerm += ` ${request.context.occasion}`;
+    }
+    shoppingInput.searchTerm = enhancedTerm;
+
+    return searchShoppingItems(shoppingInput);
   }
 
   /**
