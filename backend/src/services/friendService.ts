@@ -54,7 +54,7 @@ export interface ImportantDate {
 }
 
 export interface CreateFriendInput {
-  userId: string;
+  userId?: string;
   name: string;
   birthday: string;
   relationship: Friend['relationship'];
@@ -72,6 +72,34 @@ export interface UpdateFriendInput {
  * Friend Service - CRUD operations for friends and their nested data
  */
 export class FriendService {
+  /**
+   * Get or create a default user for single-user mode
+   */
+  private getOrCreateDefaultUser(): string {
+    // Try to find existing default user by email first
+    const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get('demo@example.com') as { id: string } | undefined;
+
+    if (existingUser) {
+      return existingUser.id;
+    }
+
+    // Try by the "default-user" id pattern (for backwards compatibility)
+    const legacyUser = db.prepare('SELECT id FROM users WHERE id = ?').get('default-user') as { id: string } | undefined;
+
+    if (legacyUser) {
+      return legacyUser.id;
+    }
+
+    // Create default user
+    const userId = 'default-user';
+    db.prepare(`
+      INSERT OR IGNORE INTO users (id, name, email, avatarUrl)
+      VALUES (?, ?, ?, ?)
+    `).run(userId, 'Demo User', 'demo@example.com', 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo');
+
+    return userId;
+  }
+
   /**
    * Get all friends for a user
    */
@@ -103,10 +131,23 @@ export class FriendService {
     const id = uuidv4();
     const now = new Date().toISOString();
 
+    // Use provided userId or get/create default user
+    // If userId is "default-user" or doesn't exist, create/use the default user
+    let userId = input.userId;
+    if (!userId || userId === 'default-user') {
+      userId = this.getOrCreateDefaultUser();
+    } else {
+      // Verify the user exists, if not use default
+      const userExists = db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
+      if (!userExists) {
+        userId = this.getOrCreateDefaultUser();
+      }
+    }
+
     db.prepare(`
       INSERT INTO friends (id, userId, name, birthday, relationship, profileImageUrl, createdAt, updatedAt)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, input.userId, input.name, input.birthday, input.relationship, input.profileImageUrl || null, now, now);
+    `).run(id, userId, input.name, input.birthday, input.relationship, input.profileImageUrl || null, now, now);
 
     return this.getById(id)!;
   }

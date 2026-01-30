@@ -5,8 +5,9 @@ import { useGiftStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Heart, Trash2, MessageCircle, Gift } from "lucide-react";
+import { Calendar, Heart, Trash2, MessageCircle, Gift, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { useState } from "react";
 
 interface PersonCardProps {
   person: Person;
@@ -15,17 +16,32 @@ interface PersonCardProps {
 }
 
 export function PersonCard({ person, onChat, onGenerateGifts }: PersonCardProps) {
-  const { deletePerson, selectPerson, selectedPersonId } = useGiftStore();
+  const { deletePerson, selectPerson, selectedPersonId, isSaving } = useGiftStore();
   const isSelected = selectedPersonId === person.id;
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const birthdayDate = new Date(person.birthday);
   const formattedBirthday = format(birthdayDate, "MMMM d");
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isDeleting || isSaving) return;
+
+    if (confirm(`Are you sure you want to delete ${person.name}?`)) {
+      setIsDeleting(true);
+      try {
+        await deletePerson(person.id);
+      } finally {
+        setIsDeleting(false);
+      }
+    }
+  };
 
   return (
     <Card
       className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
         isSelected ? "ring-2 ring-primary shadow-lg" : ""
-      }`}
+      } ${isDeleting ? "opacity-50" : ""}`}
       onClick={() => selectPerson(person.id)}
     >
       <CardHeader className="pb-3">
@@ -38,12 +54,14 @@ export function PersonCard({ person, onChat, onGenerateGifts }: PersonCardProps)
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-muted-foreground hover:text-destructive"
-            onClick={(e) => {
-              e.stopPropagation();
-              deletePerson(person.id);
-            }}
+            onClick={handleDelete}
+            disabled={isDeleting || isSaving}
           >
-            <Trash2 className="h-4 w-4" />
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
             <span className="sr-only">Delete {person.name}</span>
           </Button>
         </div>

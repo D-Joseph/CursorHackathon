@@ -12,19 +12,11 @@ interface ApiResponse<T> {
 
 /**
  * GET /api/gifts
- * Get all saved gifts for a user
+ * Get all saved gifts for the default user
  */
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (_req: Request, res: Response) => {
   try {
-    const userId = req.query.userId as string;
-
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        error: 'userId query parameter is required'
-      } as ApiResponse<null>);
-    }
-
+    const userId = 'default-user';
     const gifts = giftService.getAllByUserId(userId);
 
     res.json({
@@ -95,13 +87,12 @@ router.get('/:id', (req: Request, res: Response) => {
 
 /**
  * POST /api/gifts
- * Create a new saved gift
+ * Create a new saved gift for the default user
  */
 router.post('/', (req: Request, res: Response) => {
   try {
     const {
       friendId,
-      userId,
       name,
       description,
       priceAmount,
@@ -113,10 +104,10 @@ router.post('/', (req: Request, res: Response) => {
       status
     } = req.body;
 
-    if (!friendId || !userId || !name || !description || !priceAmount || !purchaseUrl) {
+    if (!friendId || !name || !description || !priceAmount || !purchaseUrl) {
       return res.status(400).json({
         success: false,
-        error: 'friendId, userId, name, description, priceAmount, and purchaseUrl are required'
+        error: 'friendId, name, description, priceAmount, and purchaseUrl are required'
       } as ApiResponse<null>);
     }
 
@@ -130,7 +121,7 @@ router.post('/', (req: Request, res: Response) => {
 
     const input: CreateSavedGiftInput = {
       friendId,
-      userId,
+      userId: 'default-user',
       name,
       description,
       priceAmount,

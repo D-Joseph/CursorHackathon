@@ -38,19 +38,43 @@ const WHEEL_COLORS = [
 export function SpinningWheel({ person, open, onOpenChange }: SpinningWheelProps) {
   const [isSpinning, setIsSpinning] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [selectedGift, setSelectedGift] = useState<string | null>(null);
+  const [savedGiftId, setSavedGiftId] = useState<string | null>(null);
   const wheelRef = useRef<HTMLDivElement>(null);
-  const { setGiftSuggestions } = useGiftStore();
+  const { setGiftSuggestions, saveGiftToBackend, error, clearError } = useGiftStore();
 
   const gifts = person.giftSuggestions;
 
   useEffect(() => {
     if (open) {
       setSelectedGift(null);
+      setSavedGiftId(null);
       setRotation(0);
     }
   }, [open]);
+
+  const handleSaveGift = async () => {
+    if (!selectedGift || isSaving) return;
+
+    clearError();
+    setIsSaving(true);
+
+    try {
+      const giftId = await saveGiftToBackend(person.id, {
+        name: selectedGift,
+        description: `Gift idea for ${person.name}`,
+        purchaseUrl: "",
+        status: "idea",
+      });
+      setSavedGiftId(giftId);
+    } catch (error) {
+      console.error("Error saving gift:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const generateGifts = async () => {
     setIsGenerating(true);
@@ -212,9 +236,39 @@ export function SpinningWheel({ person, open, onOpenChange }: SpinningWheelProps
 
               {/* Selected Gift Display */}
               {selectedGift && (
-                <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
-                  <p className="text-sm text-muted-foreground mb-1">Selected Gift:</p>
-                  <p className="text-lg font-semibold text-primary">{selectedGift}</p>
+                <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20 space-y-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Selected Gift:</p>
+                    <p className="text-lg font-semibold text-primary">{selectedGift}</p>
+                  </div>
+                  {savedGiftId ? (
+                    <div className="flex items-center justify-center gap-2 text-sm text-green-600">
+                      <Gift className="h-4 w-4" />
+                      Gift saved!
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={handleSaveGift}
+                      disabled={isSaving}
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Gift className="h-4 w-4" />
+                          Save This Gift
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  {error && (
+                    <p className="text-sm text-destructive">{error}</p>
+                  )}
                 </div>
               )}
 
@@ -265,6 +319,28 @@ export function SpinningWheel({ person, open, onOpenChange }: SpinningWheelProps
                   ))}
                 </div>
               </div>
+
+              {/* Saved Gifts Section */}
+              {person.savedGifts && person.savedGifts.length > 0 && (
+                <div className="space-y-2 pt-4 border-t">
+                  <p className="text-sm font-medium text-muted-foreground">Saved Gifts:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {person.savedGifts.map((gift) => (
+                      <Badge
+                        key={gift.id}
+                        variant="outline"
+                        className="gap-1"
+                      >
+                        <Gift className="h-3 w-3" />
+                        {gift.name}
+                        <span className="text-muted-foreground ml-1">
+                          ({gift.status})
+                        </span>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Regenerate Button */}
               <div className="flex justify-center pt-2">

@@ -1,18 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGiftStore } from "@/lib/store";
 import { Person } from "@/lib/types";
 import { AddPersonForm } from "@/components/add-person-form";
 import { PersonCard } from "@/components/person-card";
 import { ChatInterface } from "@/components/chat-interface";
 import { SpinningWheel } from "@/components/spinning-wheel";
-import { Gift, Users, Sparkles } from "lucide-react";
+import { Gift, Users, Sparkles, Loader2, RefreshCw, Wifi, WifiOff } from "lucide-react";
+import { checkBackendHealth } from "@/lib/api";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
-  const { people } = useGiftStore();
+  const { people, isLoading, error, loadFromBackend, clearError } = useGiftStore();
   const [chatPerson, setChatPerson] = useState<Person | null>(null);
   const [giftPerson, setGiftPerson] = useState<Person | null>(null);
+  const [isBackendConnected, setIsBackendConnected] = useState<boolean | null>(null);
+
+  // Load data from backend on mount
+  useEffect(() => {
+    const initData = async () => {
+      // Check backend health
+      const healthy = await checkBackendHealth();
+      setIsBackendConnected(healthy);
+
+      if (healthy) {
+        await loadFromBackend();
+      }
+    };
+
+    initData();
+  }, [loadFromBackend]);
+
+  const handleRefresh = async () => {
+    clearError();
+    setIsBackendConnected(await checkBackendHealth());
+    await loadFromBackend();
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -29,13 +53,60 @@ export default function Home() {
                 <p className="text-xs text-muted-foreground">Smart gift suggestions</p>
               </div>
             </div>
-            <AddPersonForm />
+            <div className="flex items-center gap-3">
+              {/* Backend connection status */}
+              {isBackendConnected === null ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Checking connection...
+                </div>
+              ) : isBackendConnected ? (
+                <div className="flex items-center gap-2 text-sm text-green-600">
+                  <Wifi className="h-4 w-4" />
+                  Connected
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <WifiOff className="h-4 w-4" />
+                  Offline
+                </div>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={isLoading}
+                className="gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                Sync
+              </Button>
+              <AddPersonForm />
+            </div>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {people.length === 0 ? (
+        {/* Error display */}
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+            <div className="flex items-center justify-between">
+              <p className="text-destructive">{error}</p>
+              <Button variant="ghost" size="sm" onClick={clearError}>
+                Dismiss
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <h2 className="text-xl font-semibold text-foreground mb-2">Loading your people...</h2>
+            <p className="text-muted-foreground">Syncing data from the server</p>
+          </div>
+        ) : people.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
             <div className="relative mb-8">
               <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center">

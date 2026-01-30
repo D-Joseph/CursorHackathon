@@ -33,13 +33,15 @@ export function AddPersonForm() {
   const [birthday, setBirthday] = useState("");
   const [relationship, setRelationship] = useState("");
   const [selectedHolidays, setSelectedHolidays] = useState<string[]>([]);
-  const { addPerson } = useGiftStore();
+  const { addPerson, isSaving, error, clearError } = useGiftStore();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !birthday || !relationship) return;
 
-    addPerson({
+    clearError();
+
+    await addPerson({
       name,
       birthday,
       relationship,
@@ -48,11 +50,14 @@ export function AddPersonForm() {
       dislikes: [],
     });
 
-    setName("");
-    setBirthday("");
-    setRelationship("");
-    setSelectedHolidays([]);
-    setOpen(false);
+    // Only close form if there was no error
+    if (!error) {
+      setName("");
+      setBirthday("");
+      setRelationship("");
+      setSelectedHolidays([]);
+      setOpen(false);
+    }
   };
 
   const toggleHoliday = (holiday: string) => {
@@ -140,9 +145,24 @@ export function AddPersonForm() {
             </ScrollArea>
           </div>
 
-          <Button type="submit" className="w-full">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Person
+          {error && (
+            <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+              {error}
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Person
+              </>
+            )}
           </Button>
         </form>
       </DialogContent>

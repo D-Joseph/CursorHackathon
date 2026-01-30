@@ -12,18 +12,11 @@ interface ApiResponse<T> {
 
 /**
  * GET /api/friends
- * Get all friends for a user
+ * Get all friends for the default user
  */
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (_req: Request, res: Response) => {
   try {
-    const userId = req.query.userId as string;
-
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        error: 'userId query parameter is required'
-      } as ApiResponse<null>);
-    }
+    const userId = 'default-user';
 
     const friends = friendService.getAllByUserId(userId);
 
@@ -72,16 +65,16 @@ router.get('/:id', (req: Request, res: Response) => {
 
 /**
  * POST /api/friends
- * Create a new friend
+ * Create a new friend for the default user
  */
 router.post('/', (req: Request, res: Response) => {
   try {
-    const { userId, name, birthday, relationship, profileImageUrl } = req.body;
+    const { name, birthday, relationship, profileImageUrl } = req.body;
 
-    if (!userId || !name || !birthday || !relationship) {
+    if (!name || !birthday || !relationship) {
       return res.status(400).json({
         success: false,
-        error: 'userId, name, birthday, and relationship are required'
+        error: 'name, birthday, and relationship are required'
       } as ApiResponse<null>);
     }
 
@@ -94,7 +87,6 @@ router.post('/', (req: Request, res: Response) => {
     }
 
     const input: CreateFriendInput = {
-      userId,
       name,
       birthday,
       relationship,

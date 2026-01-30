@@ -1,3 +1,22 @@
+export interface SavedGift {
+  id: string;
+  name: string;
+  description: string;
+  price: {
+    amount: number;
+    currency: string;
+    isOnSale?: boolean;
+    originalAmount?: number;
+    discountPercentage?: number;
+  };
+  purchaseUrl: string;
+  imageUrl?: string;
+  status: "idea" | "purchased" | "wrapped" | "given" | "returned" | "archived";
+  occasion?: string;
+  notes?: string;
+  createdAt: Date;
+}
+
 export interface Person {
   id: string;
   name: string;
@@ -8,6 +27,7 @@ export interface Person {
   dislikes: string[];
   chatHistory: ChatMessage[];
   giftSuggestions: string[];
+  savedGifts?: SavedGift[];
 }
 
 export interface ChatMessage {
