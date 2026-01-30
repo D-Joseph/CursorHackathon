@@ -257,15 +257,6 @@ export function GiftResultsDisplay({ person, open, onOpenChange }: GiftResultsDi
                 <p className="text-sm text-muted-foreground">
                   Found {products.length} gift ideas
                 </p>
-                <Button
-                  onClick={generateGiftIdeas}
-                  variant="ghost"
-                  size="sm"
-                  className="gap-2"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Refresh Ideas
-                </Button>
               </div>
 
               {/* Product cards grid */}
