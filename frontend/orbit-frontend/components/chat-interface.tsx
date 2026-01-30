@@ -23,11 +23,14 @@ interface ChatInterfaceProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function ChatInterface({ person, open, onOpenChange }: ChatInterfaceProps) {
+export function ChatInterface({ person: personProp, open, onOpenChange }: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { addChatMessage, updateInterests, updateDislikes } = useGiftStore();
+  const { people, addChatMessage, updateInterests, updateDislikes } = useGiftStore();
+
+  // Get the latest person data from the store to ensure UI updates
+  const person = people.find(p => p.id === personProp.id) || personProp;
 
   useEffect(() => {
     if (scrollRef.current) {

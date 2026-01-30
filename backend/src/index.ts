@@ -16,7 +16,7 @@ import { ApiResponse } from './types';
 import { initializeDatabase, seedDatabase } from './database/schema';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Initialize database
 initializeDatabase();
