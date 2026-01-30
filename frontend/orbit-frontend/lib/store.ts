@@ -356,7 +356,7 @@ export const useGiftStore = create<GiftStore>()(
       clearError: () => set({ error: null }),
     }),
     {
-      name: "gift-genius-storage",
+      name: "orbit-storage",
       partialize: (state) => ({
         people: state.people,
       }),

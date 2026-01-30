@@ -75,7 +75,7 @@ export function PersonCard({ person, onChat, onGenerateGifts }: PersonCardProps)
         {person.holidays.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {person.holidays.slice(0, 3).map((holiday) => (
-              <Badge key={holiday} variant="secondary" className="text-xs">
+              <Badge key={holiday} className="text-xs bg-secondary/10 text-secondary hover:bg-secondary/20">
                 {holiday}
               </Badge>
             ))}
@@ -112,7 +112,7 @@ export function PersonCard({ person, onChat, onGenerateGifts }: PersonCardProps)
           </Button>
           <Button
             size="sm"
-            className="flex-1"
+            className="flex-1 bg-secondary hover:bg-secondary/90"
             onClick={(e) => {
               e.stopPropagation();
               onGenerateGifts();
