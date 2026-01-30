@@ -112,6 +112,7 @@ export function initializeDatabase(): void {
   `);
 
   // Create saved_gifts table
+  // NOTE: friendId foreign key removed to allow frontend IDs that don't match backend
   db.exec(`
     CREATE TABLE IF NOT EXISTS saved_gifts (
       id TEXT PRIMARY KEY,
@@ -133,7 +134,6 @@ export function initializeDatabase(): void {
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (searchResultId) REFERENCES gift_search_results(id),
-      FOREIGN KEY (friendId) REFERENCES friends(id) ON DELETE CASCADE,
       FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
     )
   `);

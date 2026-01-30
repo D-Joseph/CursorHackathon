@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Gift, Sparkles, Loader2, RefreshCw, X, ShoppingBag, Heart, Check } from "lucide-react";
+import { Gift, Sparkles, Loader2, RefreshCw, X, ShoppingBag, Heart, Check, ExternalLink } from "lucide-react";
 import { GiftProductCard } from "./gift-product-card";
 import { cn } from "@/lib/utils";
 
@@ -277,45 +277,42 @@ export function GiftResultsDisplay({ person, open, onOpenChange }: GiftResultsDi
           {/* Saved gifts section */}
           {person.savedGifts && person.savedGifts.length > 0 && (
             <div className="mt-8 pt-6 border-t">
-              <div className="flex items-center gap-2 mb-4">
-                <Heart className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Saved Gifts for {person.name}</h3>
-                <Badge variant="secondary" className="ml-auto">
-                  {person.savedGifts.length} saved
+              <div className="flex items-center gap-2 mb-6">
+                <div className="p-2 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20">
+                  <Heart className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-lg">Saved in Orbit</h3>
+                <Badge variant="secondary" className="ml-auto text-sm px-3 py-1">
+                  {person.savedGifts.length} {person.savedGifts.length === 1 ? "gift" : "gifts"}
                 </Badge>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {person.savedGifts.map((gift) => (
                   <div
                     key={gift.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50"
+                    className="group relative flex flex-col rounded-xl bg-gradient-to-br from-card to-card/80 border border-border/50 overflow-hidden hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
                   >
-                    {gift.imageUrl ? (
-                      <img
-                        src={gift.imageUrl}
-                        alt={gift.name}
-                        className="w-12 h-12 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Gift className="h-5 w-5 text-primary" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{gift.name}</p>
-                      <div className="flex items-center gap-2">
-                        {gift.price.amount > 0 && (
-                          <span className="text-xs text-secondary font-semibold">
-                            ${gift.price.amount.toFixed(2)}
-                          </span>
-                        )}
+                    {/* Image */}
+                    <div className="aspect-video w-full bg-muted/30 relative overflow-hidden">
+                      {gift.imageUrl ? (
+                        <img
+                          src={gift.imageUrl}
+                          alt={gift.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
+                          <Gift className="h-10 w-10 text-muted-foreground/40" />
+                        </div>
+                      )}
+                      {/* Status badge overlay */}
+                      <div className="absolute top-2 right-2">
                         <Badge
-                          variant="outline"
                           className={cn(
-                            "text-xs capitalize",
-                            gift.status === "purchased" && "bg-green-500/10 text-green-600 border-green-500/30",
-                            gift.status === "given" && "bg-purple-500/10 text-purple-600 border-purple-500/30",
-                            gift.status === "idea" && "bg-blue-500/10 text-blue-600 border-blue-500/30"
+                            "text-xs capitalize shadow-md",
+                            gift.status === "purchased" && "bg-green-500 text-white",
+                            gift.status === "given" && "bg-purple-500 text-white",
+                            gift.status === "idea" && "bg-blue-500 text-white"
                           )}
                         >
                           {gift.status === "idea" && <Sparkles className="h-3 w-3 mr-1" />}
@@ -324,6 +321,35 @@ export function GiftResultsDisplay({ person, open, onOpenChange }: GiftResultsDi
                           {gift.status}
                         </Badge>
                       </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4 flex flex-col gap-2 flex-1">
+                      <h4 className="font-semibold text-sm line-clamp-2 leading-tight">{gift.name}</h4>
+                      {gift.price.amount > 0 && (
+                        <p className="text-lg font-bold text-secondary">
+                          ${gift.price.amount.toFixed(2)}
+                          {gift.price.isOnSale && gift.price.originalAmount && (
+                            <span className="text-xs text-muted-foreground line-through ml-2">
+                              ${gift.price.originalAmount.toFixed(2)}
+                            </span>
+                          )}
+                        </p>
+                      )}
+                      <div className="flex-1" />
+                      {gift.purchaseUrl && (
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="secondary"
+                          className="w-full mt-2"
+                        >
+                          <a href={gift.purchaseUrl} target="_blank" rel="noopener noreferrer">
+                            Buy Now
+                            <ExternalLink className="h-3 w-3 ml-2" />
+                          </a>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
