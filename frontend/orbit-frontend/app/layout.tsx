@@ -8,8 +8,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'GiftGenius - Smart Gift Suggestions',
-  description: 'Find the perfect gifts for friends and family with AI-powered suggestions',
+  title: 'Orbit - Never Forget to Reach Out',
+  description: 'Relationships take effort. Orbit makes it effortless — remembering birthdays, finding gifts, and helping you stay close to the people who matter most.',
   generator: 'v0.app',
   icons: {
     icon: [

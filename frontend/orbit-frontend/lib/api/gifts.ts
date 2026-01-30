@@ -69,11 +69,13 @@ export async function createGift(gift: {
   notes?: string;
   status?: "idea" | "purchased" | "wrapped" | "given" | "returned" | "archived";
 }) {
+  // Backend expects flat priceAmount/priceCurrency fields, not a nested price object
   const payload = {
     friendId: gift.friendId,
     name: gift.name,
     description: gift.description,
-    price: gift.price || { amount: 0, currency: "USD" },
+    priceAmount: gift.price?.amount || 0,
+    priceCurrency: gift.price?.currency || "USD",
     purchaseUrl: gift.purchaseUrl || "",
     imageUrl: gift.imageUrl,
     occasion: gift.occasion,

@@ -21,18 +21,18 @@ interface SpinningWheelProps {
 }
 
 const WHEEL_COLORS = [
-  "#E57373",
-  "#F06292",
-  "#BA68C8",
-  "#9575CD",
-  "#7986CB",
-  "#64B5F6",
-  "#4FC3F7",
-  "#4DD0E1",
-  "#4DB6AC",
-  "#81C784",
-  "#AED581",
-  "#DCE775",
+  '#25AAE1', // cyan blue (logo primary)
+  '#132DAD', // deep blue (logo variant)
+  '#25AAE1', // cyan blue again
+  '#F7AB23', // orange/gold (logo secondary)
+  '#D43B19', // red-orange (logo accent)
+  '#F7AB23', // orange/gold again
+  '#945C92', // purple (logo accent)
+  '#B87DB8', // light purple variant
+  '#945C92', // purple again
+  '#F7AB23', // orange prominent
+  '#25AAE1', // blue
+  '#D43B19', // red-orange
 ];
 
 export function SpinningWheel({ person, open, onOpenChange }: SpinningWheelProps) {
@@ -65,6 +65,7 @@ export function SpinningWheel({ person, open, onOpenChange }: SpinningWheelProps
       const giftId = await saveGiftToBackend(person.id, {
         name: selectedGift,
         description: `Gift idea for ${person.name}`,
+        price: { amount: 0, currency: "USD" },
         purchaseUrl: "",
         status: "idea",
       });

@@ -25,7 +25,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, UserPlus } from "lucide-react";
+import { Plus, UserPlus, Loader2 } from "lucide-react";
 
 export function AddPersonForm() {
   const [open, setOpen] = useState(false);
