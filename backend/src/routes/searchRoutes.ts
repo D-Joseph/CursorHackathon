@@ -60,6 +60,51 @@ router.post('/gifts', async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/search/shopping
+ * Search for shopping items with real product data (images, prices, ratings)
+ * Uses SerpApi Google Shopping when available, falls back to mock data
+ */
+router.post('/shopping', async (req: Request, res: Response) => {
+  try {
+    const searchRequest: any = req.body;
+
+    // Validate required fields
+    if (!searchRequest.query) {
+      return res.status(400).json({
+        success: false,
+        error: 'Query is required',
+      });
+    }
+
+    // Perform the shopping search (uses SerpApi)
+    const shoppingResults = await searchService.searchShopping(searchRequest);
+
+    if (!shoppingResults.success) {
+      return res.status(500).json({
+        success: false,
+        error: shoppingResults.error || 'Shopping search failed',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        query: searchRequest.query,
+        totalResults: shoppingResults.metadata.totalResults,
+        results: shoppingResults.results,
+        metadata: shoppingResults.metadata,
+      },
+    });
+  } catch (error) {
+    console.error('Shopping search error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search for shopping items',
+    });
+  }
+});
+
+/**
  * POST /api/search/web
  * General web search endpoint
  */

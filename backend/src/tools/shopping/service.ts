@@ -191,131 +191,205 @@ export class ShoppingSearchService {
 
   /**
    * Get mock shopping results for development without API keys
+   * Uses real product catalog with actual store URLs and Unsplash images
    */
   private getMockShoppingResults(searchTerm: string, limit: number): { items: ShoppingItem[]; searchInformation: { totalResults: number } } {
-    const mockItems: ShoppingItem[] = [
+    // Real product catalog with actual store URLs
+    const productCatalog: ShoppingItem[] = [
+      // Electronics
       {
         id: generateId(),
-        title: `Premium ${searchTerm} - Best Seller`,
-        url: 'https://example.com/product-1',
-        snippet: `High-quality ${searchTerm} with excellent customer reviews. Perfect for everyday use.`,
-        price: {
-          value: 49.99,
-          currency: 'USD',
-          isOnSale: false,
-        },
-        rating: {
-          score: 4.5,
-          reviewCount: 1250,
-        },
-        imageUrl: 'https://example.com/image-1.jpg',
+        title: 'Sony WH-1000XM5 Wireless Headphones',
+        url: 'https://www.amazon.com/dp/B09XS7JWHH',
+        snippet: 'Industry-leading noise cancellation, exceptional sound quality, 30-hour battery life.',
+        price: { value: 349.99, currency: 'USD', isOnSale: true, originalPrice: 399.99 },
+        rating: { score: 4.8, reviewCount: 34521 },
+        imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop',
         availability: 'in_stock',
-        source: 'Example Store',
-        metadata: {
-          category: 'general',
-          brand: 'QualityBrand',
-          isSponsored: false,
-        },
+        source: 'Amazon',
+        metadata: { category: 'electronics', brand: 'Sony' },
       },
       {
         id: generateId(),
-        title: `Classic ${searchTerm} - Great Value`,
-        url: 'https://example.com/product-2',
-        snippet: `Affordable ${searchTerm} that doesn't compromise on quality. Great for gifts.`,
-        price: {
-          value: 29.99,
-          currency: 'USD',
-          isOnSale: true,
-          originalPrice: 39.99,
-        },
-        rating: {
-          score: 4.2,
-          reviewCount: 856,
-        },
-        imageUrl: 'https://example.com/image-2.jpg',
+        title: 'Apple Watch Series 9',
+        url: 'https://www.apple.com/shop/buy-watch/apple-watch',
+        snippet: 'Advanced health features, always-on Retina display, powerful fitness tracking.',
+        price: { value: 399.00, currency: 'USD' },
+        rating: { score: 4.7, reviewCount: 45231 },
+        imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop',
         availability: 'in_stock',
-        source: 'Value Shop',
-        metadata: {
-          category: 'general',
-          brand: 'ValueBrand',
-          isSponsored: true,
-        },
+        source: 'Apple',
+        metadata: { category: 'electronics', brand: 'Apple' },
+      },
+      // Cooking
+      {
+        id: generateId(),
+        title: 'Lodge Cast Iron Skillet 12-Inch',
+        url: 'https://www.amazon.com/dp/B00006JSUB',
+        snippet: 'Pre-seasoned cast iron for perfect searing. Lasts for generations.',
+        price: { value: 49.99, currency: 'USD', isOnSale: true, originalPrice: 79.99 },
+        rating: { score: 4.7, reviewCount: 89234 },
+        imageUrl: 'https://images.unsplash.com/photo-1585837146751-a44118595680?w=400&h=400&fit=crop',
+        availability: 'in_stock',
+        source: 'Amazon',
+        metadata: { category: 'cooking', brand: 'Lodge' },
       },
       {
         id: generateId(),
-        title: `Deluxe ${searchTerm} - Premium Edition`,
-        url: 'https://example.com/product-3',
-        snippet: `The ultimate ${searchTerm} experience. Features premium materials and advanced functionality.`,
-        price: {
-          value: 89.99,
-          currency: 'USD',
-          isOnSale: false,
-        },
-        rating: {
-          score: 4.8,
-          reviewCount: 423,
-        },
-        imageUrl: 'https://example.com/image-3.jpg',
+        title: 'Instant Pot Duo Plus 6-Quart',
+        url: 'https://www.target.com/p/instant-pot-duo-plus-6qt/-/A-75560570',
+        snippet: '9-in-1 pressure cooker, slow cooker, rice cooker, steamer and more.',
+        price: { value: 129.99, currency: 'USD', isOnSale: true, originalPrice: 149.99 },
+        rating: { score: 4.8, reviewCount: 67234 },
+        imageUrl: 'https://images.unsplash.com/photo-1585515320310-259814833e62?w=400&h=400&fit=crop',
         availability: 'in_stock',
-        source: 'Luxury Goods',
-        metadata: {
-          category: 'premium',
-          brand: 'LuxuryBrand',
-          isSponsored: false,
-        },
+        source: 'Target',
+        metadata: { category: 'cooking', brand: 'Instant Pot' },
+      },
+      // Outdoor/Hiking
+      {
+        id: generateId(),
+        title: 'Osprey Atmos AG 65 Backpack',
+        url: 'https://www.rei.com/product/177573/osprey-atmos-ag-65-pack-mens',
+        snippet: 'Anti-Gravity suspension for all-day comfort. Perfect for multi-day adventures.',
+        price: { value: 289.95, currency: 'USD' },
+        rating: { score: 4.9, reviewCount: 3421 },
+        imageUrl: 'https://images.unsplash.com/photo-1622260614153-03223fb72052?w=400&h=400&fit=crop',
+        availability: 'in_stock',
+        source: 'REI',
+        metadata: { category: 'hiking', brand: 'Osprey' },
       },
       {
         id: generateId(),
-        title: `Budget ${searchTerm} - Essential`,
-        url: 'https://example.com/product-4',
-        snippet: `Simple and straightforward ${searchTerm} for basic needs. Reliable and affordable.`,
-        price: {
-          value: 19.99,
-          currency: 'USD',
-          isOnSale: false,
-        },
-        rating: {
-          score: 3.9,
-          reviewCount: 2100,
-        },
-        imageUrl: 'https://example.com/image-4.jpg',
+        title: 'Hydro Flask Water Bottle 32oz',
+        url: 'https://www.hydroflask.com/32-oz-wide-mouth',
+        snippet: 'Double-wall vacuum insulation keeps drinks cold 24 hours, hot 12 hours.',
+        price: { value: 44.95, currency: 'USD' },
+        rating: { score: 4.8, reviewCount: 23412 },
+        imageUrl: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&h=400&fit=crop',
         availability: 'in_stock',
-        source: 'Budget Store',
-        metadata: {
-          category: 'budget',
-          brand: 'BudgetBrand',
-          isSponsored: false,
-        },
+        source: 'Hydro Flask',
+        metadata: { category: 'outdoor', brand: 'Hydro Flask' },
       },
+      // Photography
       {
         id: generateId(),
-        title: `Eco-Friendly ${searchTerm} - Sustainable Choice`,
-        url: 'https://example.com/product-5',
-        snippet: `Environmentally conscious ${searchTerm} made from sustainable materials. Good for the planet.`,
-        price: {
-          value: 39.99,
-          currency: 'USD',
-          isOnSale: false,
-        },
-        rating: {
-          score: 4.6,
-          reviewCount: 567,
-        },
-        imageUrl: 'https://example.com/image-5.jpg',
-        availability: 'limited',
-        source: 'Green Market',
-        metadata: {
-          category: 'eco-friendly',
-          brand: 'EcoBrand',
-          isSponsored: false,
-        },
+        title: 'Peak Design Everyday Sling 6L',
+        url: 'https://www.peakdesign.com/products/everyday-sling',
+        snippet: 'Versatile camera bag with quick-access dividers. Perfect for mirrorless setups.',
+        price: { value: 99.95, currency: 'USD' },
+        rating: { score: 4.6, reviewCount: 5621 },
+        imageUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&h=400&fit=crop',
+        availability: 'in_stock',
+        source: 'Peak Design',
+        metadata: { category: 'photography', brand: 'Peak Design' },
+      },
+      // Gaming
+      {
+        id: generateId(),
+        title: 'Razer DeathAdder V3 Gaming Mouse',
+        url: 'https://www.razer.com/gaming-mice/razer-deathadder-v3',
+        snippet: 'Ultra-lightweight ergonomic design with 30K optical sensor.',
+        price: { value: 89.99, currency: 'USD' },
+        rating: { score: 4.7, reviewCount: 12453 },
+        imageUrl: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=400&h=400&fit=crop',
+        availability: 'in_stock',
+        source: 'Razer',
+        metadata: { category: 'gaming', brand: 'Razer' },
+      },
+      // Reading
+      {
+        id: generateId(),
+        title: 'Kindle Paperwhite (16 GB)',
+        url: 'https://www.amazon.com/dp/B08KTZ8249',
+        snippet: 'Glare-free display, waterproof design, weeks of battery life.',
+        price: { value: 139.99, currency: 'USD', isOnSale: true, originalPrice: 159.99 },
+        rating: { score: 4.8, reviewCount: 123421 },
+        imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
+        availability: 'in_stock',
+        source: 'Amazon',
+        metadata: { category: 'reading', brand: 'Amazon' },
+      },
+      // Home & Lifestyle
+      {
+        id: generateId(),
+        title: 'Yankee Candle Large Jar Collection',
+        url: 'https://www.yankeecandle.com/collections/large-jar-candles',
+        snippet: 'Premium soy-blend wax with 110-150 hours of burn time.',
+        price: { value: 31.00, currency: 'USD', isOnSale: true, originalPrice: 44.00 },
+        rating: { score: 4.6, reviewCount: 9823 },
+        imageUrl: 'https://images.unsplash.com/photo-1602607434639-aef11c451290?w=400&h=400&fit=crop',
+        availability: 'in_stock',
+        source: 'Yankee Candle',
+        metadata: { category: 'home', brand: 'Yankee Candle' },
+      },
+      // Fitness
+      {
+        id: generateId(),
+        title: 'Lululemon Reversible Mat 5mm',
+        url: 'https://shop.lululemon.com/p/yoga-mats/The-Reversible-Mat-5',
+        snippet: 'Natural rubber base provides cushion and grip for any practice.',
+        price: { value: 88.00, currency: 'USD' },
+        rating: { score: 4.7, reviewCount: 4521 },
+        imageUrl: 'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=400&h=400&fit=crop',
+        availability: 'in_stock',
+        source: 'Lululemon',
+        metadata: { category: 'fitness', brand: 'Lululemon' },
+      },
+      // Gift Sets
+      {
+        id: generateId(),
+        title: 'Gourmet Gift Basket Deluxe',
+        url: 'https://www.harryanddavid.com/h/gift-baskets/deluxe-favorites',
+        snippet: 'Curated selection of artisan cheeses, crackers, chocolates and more.',
+        price: { value: 79.99, currency: 'USD' },
+        rating: { score: 4.5, reviewCount: 8921 },
+        imageUrl: 'https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=400&h=400&fit=crop',
+        availability: 'in_stock',
+        source: 'Harry & David',
+        metadata: { category: 'gift', brand: 'Harry & David' },
       },
     ];
 
+    // Filter and prioritize based on search term
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    const scoredProducts = productCatalog.map(product => {
+      let score = 0;
+      const productText = `${product.title} ${product.snippet} ${product.metadata?.category || ''} ${product.metadata?.brand || ''}`.toLowerCase();
+
+      // Exact category match
+      if (product.metadata?.category && lowerSearchTerm.includes(product.metadata.category)) {
+        score += 10;
+      }
+
+      // Title contains search term
+      if (product.title.toLowerCase().includes(lowerSearchTerm)) {
+        score += 5;
+      }
+
+      // Any word match
+      const searchWords = lowerSearchTerm.split(/\s+/);
+      for (const word of searchWords) {
+        if (word.length > 2 && productText.includes(word)) {
+          score += 2;
+        }
+      }
+
+      // Base relevance for all products
+      score += 1;
+
+      return { product, score };
+    });
+
+    // Sort by score and return
+    const sortedProducts = scoredProducts
+      .sort((a, b) => b.score - a.score)
+      .map(item => item.product);
+
     return {
-      items: mockItems.slice(0, limit),
+      items: sortedProducts.slice(0, limit),
       searchInformation: {
-        totalResults: mockItems.length,
+        totalResults: sortedProducts.length,
       },
     };
   }

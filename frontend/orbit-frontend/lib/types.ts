@@ -1,3 +1,23 @@
+export interface ShoppingProduct {
+  id: string;
+  title: string;
+  url: string;
+  snippet: string;
+  price?: {
+    value: number;
+    currency: string;
+    isOnSale?: boolean;
+    originalPrice?: number;
+  };
+  rating?: {
+    score: number;
+    reviewCount: number;
+  };
+  imageUrl?: string;
+  availability: "in_stock" | "out_of_stock" | "limited" | "unknown";
+  source: string;
+}
+
 export interface SavedGift {
   id: string;
   name: string;

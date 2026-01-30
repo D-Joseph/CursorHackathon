@@ -6,7 +6,7 @@ import { Person } from "@/lib/types";
 import { AddPersonForm } from "@/components/add-person-form";
 import { PersonCard } from "@/components/person-card";
 import { ChatInterface } from "@/components/chat-interface";
-import { SpinningWheel } from "@/components/spinning-wheel";
+import { GiftResultsDisplay } from "@/components/gift-results-display";
 import { Gift, Sparkles, Loader2, Heart, Calendar, MessageCircle, ChevronDown } from "lucide-react";
 import { checkBackendHealth } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -204,9 +204,9 @@ export default function Home() {
             />
           )}
 
-          {/* Gift Wheel Dialog */}
+          {/* Gift Results Display */}
           {giftPerson && (
-            <SpinningWheel
+            <GiftResultsDisplay
               person={giftPerson}
               open={!!giftPerson}
               onOpenChange={(open) => !open && setGiftPerson(null)}

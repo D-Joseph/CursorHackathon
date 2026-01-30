@@ -5,7 +5,8 @@ import { useGiftStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Heart, Trash2, MessageCircle, Gift, Loader2, Pencil } from "lucide-react";
+import { Calendar, Heart, Trash2, MessageCircle, Gift, Loader2, Pencil, Sparkles, Check, Package } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useState } from "react";
 
@@ -119,6 +120,59 @@ export function PersonCard({ person, onChat, onGenerateGifts, onEdit }: PersonCa
               {person.interests.slice(0, 2).join(", ")}
               {person.interests.length > 2 && "..."}
             </span>
+          </div>
+        )}
+
+        {/* Saved Gifts Timeline */}
+        {person.savedGifts && person.savedGifts.length > 0 && (
+          <div className="pt-2 border-t border-border/50">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Package className="h-3.5 w-3.5 text-secondary" />
+              <span className="text-xs font-medium text-muted-foreground">
+                {person.savedGifts.length} saved gift{person.savedGifts.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
+              {person.savedGifts.slice(0, 4).map((gift) => (
+                <div
+                  key={gift.id}
+                  className="relative flex-shrink-0 group/gift"
+                  title={`${gift.name} - ${gift.status}`}
+                >
+                  {gift.imageUrl ? (
+                    <img
+                      src={gift.imageUrl}
+                      alt={gift.name}
+                      className="w-10 h-10 rounded-lg object-cover border border-border/50"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border border-border/50">
+                      <Gift className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  )}
+                  {/* Status indicator */}
+                  <div
+                    className={cn(
+                      "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center border-2 border-card",
+                      gift.status === "idea" && "bg-blue-500",
+                      gift.status === "purchased" && "bg-green-500",
+                      gift.status === "wrapped" && "bg-purple-500",
+                      gift.status === "given" && "bg-secondary"
+                    )}
+                  >
+                    {gift.status === "idea" && <Sparkles className="h-2 w-2 text-white" />}
+                    {gift.status === "purchased" && <Check className="h-2 w-2 text-white" />}
+                    {gift.status === "wrapped" && <Package className="h-2 w-2 text-white" />}
+                    {gift.status === "given" && <Gift className="h-2 w-2 text-white" />}
+                  </div>
+                </div>
+              ))}
+              {person.savedGifts.length > 4 && (
+                <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center text-xs font-medium text-muted-foreground border border-border/50">
+                  +{person.savedGifts.length - 4}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

@@ -42,26 +42,41 @@ export class SearchService {
    * @returns ShoppingSearchOutput with structured shopping items
    */
   async searchShopping(request: any): Promise<ShoppingSearchOutput> {
+    // Extract a clean display term from the query (remove "gift", "best", "products" etc.)
+    const originalQuery = request.query || '';
+    const displayTerm = this.extractDisplayTerm(originalQuery);
+
     // Convert SearchRequest to ShoppingSearchInput
     const shoppingInput: ShoppingSearchInput = {
-      searchTerm: request.query,
+      searchTerm: displayTerm, // Use clean term for mock data display
       maxResults: request.limit || 10,
       category: request.context?.personInterests?.[0],
       priceRange: request.filters?.maxPrice ? { max: request.filters.maxPrice } : undefined,
       sortBy: 'relevance',
     };
 
-    // Enhance query with context
-    let enhancedTerm = request.query;
-    if (request.context?.personInterests?.length) {
-      enhancedTerm += ' ' + request.context.personInterests.join(' ');
-    }
-    if (request.context?.occasion) {
-      enhancedTerm += ` ${request.context.occasion}`;
-    }
-    shoppingInput.searchTerm = enhancedTerm;
-
     return searchShoppingItems(shoppingInput);
+  }
+
+  /**
+   * Extract a clean display term from a search query
+   * Removes common gift-search words to get the core interest
+   */
+  private extractDisplayTerm(query: string): string {
+    // Remove common filler words to get the core term
+    const fillerWords = ['gift', 'gifts', 'best', 'top', 'products', 'for', 'ideas', 'buy', 'purchase', 'shop'];
+    const words = query.toLowerCase().split(/\s+/);
+    const cleanWords = words.filter(word => !fillerWords.includes(word) && word.length > 1);
+
+    if (cleanWords.length === 0) {
+      return 'Gift'; // Default fallback
+    }
+
+    // Capitalize first letter of each word
+    return cleanWords
+      .slice(0, 2) // Take first 2 meaningful words max
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   /**
