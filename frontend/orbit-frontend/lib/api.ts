@@ -117,10 +117,8 @@ async function fetchApi<T>(
       };
     }
 
-    return {
-      success: true,
-      data,
-    };
+    // Backend already returns { success, data, error } format - pass through directly
+    return data as ApiResponse<T>;
   } catch (error) {
     console.error(`API Error [${endpoint}]:`, error);
     return {

@@ -58,10 +58,17 @@ async function main(): Promise<void> {
   // Handle database reset
   if (reset) {
     console.log('Resetting database...');
-    if (fs.existsSync(DB_PATH)) {
-      fs.unlinkSync(DB_PATH);
-      console.log('  - Removed existing database');
-    } else {
+    // SQLite WAL mode creates additional files that must also be deleted
+    const dbFiles = [DB_PATH, `${DB_PATH}-shm`, `${DB_PATH}-wal`];
+    let removed = false;
+    for (const file of dbFiles) {
+      if (fs.existsSync(file)) {
+        fs.unlinkSync(file);
+        console.log(`  - Removed ${path.basename(file)}`);
+        removed = true;
+      }
+    }
+    if (!removed) {
       console.log('  - No existing database found');
     }
     console.log('');

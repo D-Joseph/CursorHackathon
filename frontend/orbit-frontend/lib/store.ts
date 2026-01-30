@@ -68,7 +68,7 @@ export const useGiftStore = create<GiftStore>()(
           }));
 
           // Sync to backend
-          const response = await friendsApi.createFriend(person, get().userId);
+          const response = await friendsApi.createFriend(person);
           if (response.success && response.data) {
             // Replace temp ID with actual backend ID
             set((state) => ({
@@ -208,7 +208,7 @@ export const useGiftStore = create<GiftStore>()(
           // Fetch gifts for each friend
           const peopleWithGifts = await Promise.all(
             friendsResponse.data.map(async (friend) => {
-              const giftsResponse = await giftsApi.getGiftsByFriend(friend.id, userId);
+              const giftsResponse = await giftsApi.getGiftsByFriend(friend.id);
               const gifts = giftsResponse.success && giftsResponse.data ? giftsResponse.data : [];
               return friendsApi.backendFriendToPerson(friend, gifts);
             })
@@ -230,7 +230,7 @@ export const useGiftStore = create<GiftStore>()(
       savePersonToBackend: async (person) => {
         set({ isSaving: true, error: null });
         try {
-          const response = await friendsApi.createFriend(person, get().userId);
+          const response = await friendsApi.createFriend(person);
           if (response.success && response.data) {
             set({ isSaving: false });
             return response.data.id;
