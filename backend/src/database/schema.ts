@@ -199,10 +199,10 @@ export function seedDatabase(): void {
     return;
   }
 
-  // Create sample user
-  const userId = uuidv4();
+  // Create sample user (using 'default-user' to match backend API)
+  const userId = 'default-user';
   db.prepare(`
-    INSERT INTO users (id, name, email, avatarUrl)
+    INSERT OR IGNORE INTO users (id, name, email, avatarUrl)
     VALUES (?, ?, ?, ?)
   `).run(userId, 'Demo User', 'demo@example.com', 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo');
 
