@@ -68,6 +68,9 @@ export interface UpdateFriendInput {
   birthday?: string;
   relationship?: Friend['relationship'];
   profileImageUrl?: string;
+  likes?: Array<{ name: string; categoryType: 'like'; items: Array<{ name: string; tags: string[]; rank: number }> }>;
+  dislikes?: Array<{ name: string; categoryType: 'dislike'; items: Array<{ name: string; tags: string[]; rank: number }> }>;
+  holidays?: Array<{ name: string; date: string; type: 'other'; recurring: boolean; giftIdeas: string[] }>;
 }
 
 /**
@@ -216,6 +219,80 @@ export class FriendService {
     if (input.profileImageUrl !== undefined) {
       updates.push('profileImageUrl = ?');
       values.push(input.profileImageUrl);
+    }
+
+    // Handle likes update - delete existing and create new
+    if (input.likes !== undefined) {
+      // Delete existing like categories
+      const existingLikes = db.prepare(`
+        SELECT id FROM preference_categories WHERE friendId = ? AND categoryType = 'like'
+      `).all(id) as any[];
+      for (const category of existingLikes) {
+        db.prepare(`DELETE FROM ranked_items WHERE categoryId = ?`).run(category.id);
+        db.prepare(`DELETE FROM preference_categories WHERE id = ?`).run(category.id);
+      }
+      // Create new like categories
+      for (const category of input.likes) {
+        const categoryId = uuidv4();
+        db.prepare(`
+          INSERT INTO preference_categories (id, friendId, name, categoryType)
+          VALUES (?, ?, ?, ?)
+        `).run(categoryId, id, category.name, 'like');
+        if (category.items) {
+          for (const item of category.items) {
+            db.prepare(`
+              INSERT INTO ranked_items (id, categoryId, name, tags, rank, description, source)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+            `).run(uuidv4(), categoryId, item.name, JSON.stringify(item.tags), item.rank, null, null);
+          }
+        }
+      }
+    }
+
+    // Handle dislikes update - delete existing and create new
+    if (input.dislikes !== undefined) {
+      // Delete existing dislike categories
+      const existingDislikes = db.prepare(`
+        SELECT id FROM preference_categories WHERE friendId = ? AND categoryType = 'dislike'
+      `).all(id) as any[];
+      for (const category of existingDislikes) {
+        db.prepare(`DELETE FROM ranked_items WHERE categoryId = ?`).run(category.id);
+        db.prepare(`DELETE FROM preference_categories WHERE id = ?`).run(category.id);
+      }
+      // Create new dislike categories
+      for (const category of input.dislikes) {
+        const categoryId = uuidv4();
+        db.prepare(`
+          INSERT INTO preference_categories (id, friendId, name, categoryType)
+          VALUES (?, ?, ?, ?)
+        `).run(categoryId, id, category.name, 'dislike');
+        if (category.items) {
+          for (const item of category.items) {
+            db.prepare(`
+              INSERT INTO ranked_items (id, categoryId, name, tags, rank, description, source)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+            `).run(uuidv4(), categoryId, item.name, JSON.stringify(item.tags), item.rank, null, null);
+          }
+        }
+      }
+    }
+
+    // Handle holidays update - delete existing non-birthday important dates and create new
+    if (input.holidays !== undefined) {
+      // Delete existing holiday dates (type !== 'birthday')
+      const existingDates = db.prepare(`
+        SELECT id FROM important_dates WHERE friendId = ? AND type != 'birthday'
+      `).all(id) as any[];
+      for (const date of existingDates) {
+        db.prepare(`DELETE FROM important_dates WHERE id = ?`).run(date.id);
+      }
+      // Create new holiday dates
+      for (const date of input.holidays) {
+        db.prepare(`
+          INSERT INTO important_dates (id, friendId, name, date, type, recurring, giftIdeas)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(uuidv4(), id, date.name, date.date, date.type, date.recurring ? 1 : 0, JSON.stringify(date.giftIdeas || []));
+      }
     }
 
     if (updates.length === 0) return this.getById(id);

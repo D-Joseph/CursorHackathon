@@ -118,13 +118,16 @@ router.post('/', (req: Request, res: Response) => {
 router.put('/:id', (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, birthday, relationship, profileImageUrl } = req.body;
+    const { name, birthday, relationship, profileImageUrl, likes, dislikes, holidays } = req.body;
 
     const input: UpdateFriendInput = {};
     if (name) input.name = name;
     if (birthday) input.birthday = birthday;
     if (relationship) input.relationship = relationship;
     if (profileImageUrl !== undefined) input.profileImageUrl = profileImageUrl;
+    if (likes !== undefined) input.likes = likes;
+    if (dislikes !== undefined) input.dislikes = dislikes;
+    if (holidays !== undefined) input.holidays = holidays;
 
     const friend = friendService.update(id, input);
 

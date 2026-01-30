@@ -5,7 +5,7 @@ import { useGiftStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Heart, Trash2, MessageCircle, Gift, Loader2 } from "lucide-react";
+import { Calendar, Heart, Trash2, MessageCircle, Gift, Loader2, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 
@@ -13,15 +13,24 @@ interface PersonCardProps {
   person: Person;
   onChat: () => void;
   onGenerateGifts: () => void;
+  onEdit?: () => void;
 }
 
-export function PersonCard({ person, onChat, onGenerateGifts }: PersonCardProps) {
+export function PersonCard({ person, onChat, onGenerateGifts, onEdit }: PersonCardProps) {
   const { deletePerson, selectPerson, selectedPersonId, isSaving } = useGiftStore();
   const isSelected = selectedPersonId === person.id;
   const [isDeleting, setIsDeleting] = useState(false);
 
   const birthdayDate = new Date(person.birthday);
   const formattedBirthday = format(birthdayDate, "MMMM d");
+
+  const handleCardClick = () => {
+    if (onEdit) {
+      onEdit();
+    } else {
+      selectPerson(person.id);
+    }
+  };
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -42,7 +51,7 @@ export function PersonCard({ person, onChat, onGenerateGifts }: PersonCardProps)
       className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
         isSelected ? "ring-2 ring-primary shadow-lg" : ""
       } ${isDeleting ? "opacity-50" : ""}`}
-      onClick={() => selectPerson(person.id)}
+      onClick={handleCardClick}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -50,20 +59,36 @@ export function PersonCard({ person, onChat, onGenerateGifts }: PersonCardProps)
             <CardTitle className="text-lg text-balance">{person.name}</CardTitle>
             <p className="text-sm text-muted-foreground">{person.relationship}</p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-            onClick={handleDelete}
-            disabled={isDeleting || isSaving}
-          >
-            {isDeleting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
+          <div className="flex gap-1">
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+                <span className="sr-only">Edit {person.name}</span>
+              </Button>
             )}
-            <span className="sr-only">Delete {person.name}</span>
-          </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              onClick={handleDelete}
+              disabled={isDeleting || isSaving}
+            >
+              {isDeleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+              <span className="sr-only">Delete {person.name}</span>
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

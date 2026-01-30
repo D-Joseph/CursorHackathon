@@ -1,10 +1,9 @@
 "use client";
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 
-import { useState } from "react";
 import { useGiftStore } from "@/lib/store";
-import { HOLIDAYS, RELATIONSHIPS } from "@/lib/types";
+import { HOLIDAYS, RELATIONSHIPS, Person } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,9 +24,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, UserPlus, Loader2 } from "lucide-react";
+import { Plus, UserPlus, Loader2, Pencil } from "lucide-react";
 
-export function AddPersonForm() {
+interface AddPersonFormProps {
+  editingPerson?: Person | null;
+  onEditComplete?: () => void;
+}
+
+export function AddPersonForm({ editingPerson, onEditComplete }: AddPersonFormProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
@@ -35,7 +39,49 @@ export function AddPersonForm() {
   const [selectedHolidays, setSelectedHolidays] = useState<string[]>([]);
   const [interests, setInterests] = useState("");
   const [dislikes, setDislikes] = useState("");
-  const { addPerson, isSaving, error, clearError } = useGiftStore();
+  const { addPerson, updatePerson, isSaving, error, clearError } = useGiftStore();
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (editingPerson) {
+      setName(editingPerson.name);
+      setBirthday(editingPerson.birthday);
+      setRelationship(editingPerson.relationship);
+      setSelectedHolidays(editingPerson.holidays || []);
+      setInterests(editingPerson.interests?.join(", ") || "");
+      setDislikes(editingPerson.dislikes?.join(", ") || "");
+      setOpen(true);
+    }
+  }, [editingPerson]);
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      // Small delay to allow the dialog animation to complete
+      setTimeout(() => {
+        if (!editingPerson) {
+          setName("");
+          setBirthday("");
+          setRelationship("");
+          setSelectedHolidays([]);
+          setInterests("");
+          setDislikes("");
+        }
+      }, 200);
+    }
+  }, [open, editingPerson]);
+
+  // Reset form when editingPerson changes (for external resets)
+  useEffect(() => {
+    if (!editingPerson && open) {
+      setName("");
+      setBirthday("");
+      setRelationship("");
+      setSelectedHolidays([]);
+      setInterests("");
+      setDislikes("");
+    }
+  }, [editingPerson, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,24 +89,32 @@ export function AddPersonForm() {
 
     clearError();
 
-    await addPerson({
+    const personData = {
       name,
       birthday,
       relationship,
       holidays: selectedHolidays,
       interests: interests.split(",").map(s => s.trim()).filter(s => s),
       dislikes: dislikes.split(",").map(s => s.trim()).filter(s => s),
-    });
+    };
 
-    // Only close form if there was no error
-    if (!error) {
-      setName("");
-      setBirthday("");
-      setRelationship("");
-      setSelectedHolidays([]);
-      setInterests("");
-      setDislikes("");
-      setOpen(false);
+    if (editingPerson) {
+      await updatePerson(editingPerson.id, personData);
+      if (!error) {
+        onEditComplete?.();
+        setOpen(false);
+      }
+    } else {
+      await addPerson(personData);
+      if (!error) {
+        setName("");
+        setBirthday("");
+        setRelationship("");
+        setSelectedHolidays([]);
+        setInterests("");
+        setDislikes("");
+        setOpen(false);
+      }
     }
   };
 
@@ -72,19 +126,27 @@ export function AddPersonForm() {
     );
   };
 
+  const isEditing = !!editingPerson;
+  const dialogTitle = isEditing ? "Edit Person" : "Add a New Person";
+  const dialogDescription = isEditing
+    ? "Update the details for this person."
+    : "Create a profile for someone you want to find gifts for.";
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" className="gap-2">
-          <UserPlus className="h-5 w-5" />
-          Add Person
-        </Button>
+        {isEditing ? null : (
+          <Button size="lg" className="gap-2">
+            <UserPlus className="h-5 w-5" />
+            Add Person
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add a New Person</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>
-            Create a profile for someone you want to find gifts for.
+            {dialogDescription}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -185,12 +247,21 @@ export function AddPersonForm() {
             {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
+                {isEditing ? "Saving..." : "Adding..."}
               </>
             ) : (
               <>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Person
+                {isEditing ? (
+                  <>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Person
+                  </>
+                )}
               </>
             )}
           </Button>

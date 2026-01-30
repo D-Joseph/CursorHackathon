@@ -16,6 +16,7 @@ export default function Home() {
   const [chatPerson, setChatPerson] = useState<Person | null>(null);
   const [giftPerson, setGiftPerson] = useState<Person | null>(null);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [editingPerson, setEditingPerson] = useState<Person | null>(null);
 
   // Load data from backend on mount
   useEffect(() => {
@@ -28,6 +29,10 @@ export default function Home() {
 
     initData();
   }, [loadFromBackend]);
+
+  const handleEditComplete = () => {
+    setEditingPerson(null);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -119,7 +124,10 @@ export default function Home() {
                   </div>
                 </div>
                 {/* Just the Add Person button - clean and simple */}
-                <AddPersonForm />
+                <AddPersonForm
+                  editingPerson={editingPerson}
+                  onEditComplete={handleEditComplete}
+                />
               </div>
             </div>
           </header>
@@ -156,7 +164,10 @@ export default function Home() {
                 <p className="text-muted-foreground mb-10 max-w-lg mx-auto text-xl leading-relaxed">
                   Add the people you care about. Orbit will help you remember birthdays, find the perfect gifts, and never let too much time pass without reaching out.
                 </p>
-                <AddPersonForm />
+                <AddPersonForm
+                  editingPerson={editingPerson}
+                  onEditComplete={handleEditComplete}
+                />
               </div>
             ) : (
               <div className="space-y-8">
@@ -176,6 +187,7 @@ export default function Home() {
                       person={person}
                       onChat={() => setChatPerson(person)}
                       onGenerateGifts={() => setGiftPerson(person)}
+                      onEdit={() => setEditingPerson(person)}
                     />
                   ))}
                 </div>
