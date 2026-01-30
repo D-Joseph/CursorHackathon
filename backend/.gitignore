@@ -42,3 +42,7 @@ Desktop.ini
 tmp/
 temp/
 *.tmp
+
+
+*.db-shm
+*.db-wal
