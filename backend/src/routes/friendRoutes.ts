@@ -69,7 +69,7 @@ router.get('/:id', (req: Request, res: Response) => {
  */
 router.post('/', (req: Request, res: Response) => {
   try {
-    const { name, birthday, relationship, profileImageUrl } = req.body;
+    const { name, birthday, relationship, profileImageUrl, likes, dislikes } = req.body;
 
     if (!name || !birthday || !relationship) {
       return res.status(400).json({
@@ -90,7 +90,9 @@ router.post('/', (req: Request, res: Response) => {
       name,
       birthday,
       relationship,
-      profileImageUrl
+      profileImageUrl,
+      likes: likes || [],
+      dislikes: dislikes || [],
     };
 
     const friend = friendService.create(input);

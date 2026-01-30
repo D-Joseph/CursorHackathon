@@ -33,6 +33,8 @@ export function AddPersonForm() {
   const [birthday, setBirthday] = useState("");
   const [relationship, setRelationship] = useState("");
   const [selectedHolidays, setSelectedHolidays] = useState<string[]>([]);
+  const [interests, setInterests] = useState("");
+  const [dislikes, setDislikes] = useState("");
   const { addPerson, isSaving, error, clearError } = useGiftStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,8 +48,8 @@ export function AddPersonForm() {
       birthday,
       relationship,
       holidays: selectedHolidays,
-      interests: [],
-      dislikes: [],
+      interests: interests.split(",").map(s => s.trim()).filter(s => s),
+      dislikes: dislikes.split(",").map(s => s.trim()).filter(s => s),
     });
 
     // Only close form if there was no error
@@ -56,6 +58,8 @@ export function AddPersonForm() {
       setBirthday("");
       setRelationship("");
       setSelectedHolidays([]);
+      setInterests("");
+      setDislikes("");
       setOpen(false);
     }
   };
@@ -143,6 +147,32 @@ export function AddPersonForm() {
                 ))}
               </div>
             </ScrollArea>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="interests">Interests</Label>
+            <Input
+              id="interests"
+              placeholder="e.g., cooking, hiking, sci-fi"
+              value={interests}
+              onChange={(e) => setInterests(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Separate multiple interests with commas
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="dislikes">Dislikes</Label>
+            <Input
+              id="dislikes"
+              placeholder="e.g., spiders, olives, waking up early"
+              value={dislikes}
+              onChange={(e) => setDislikes(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Separate multiple dislikes with commas
+            </p>
           </div>
 
           {error && (

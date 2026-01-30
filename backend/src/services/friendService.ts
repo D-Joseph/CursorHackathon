@@ -59,6 +59,8 @@ export interface CreateFriendInput {
   birthday: string;
   relationship: Friend['relationship'];
   profileImageUrl?: string;
+  likes?: Array<{ name: string; categoryType: 'like'; items: Array<{ name: string; tags: string[]; rank: number }> }>;
+  dislikes?: Array<{ name: string; categoryType: 'dislike'; items: Array<{ name: string; tags: string[]; rank: number }> }>;
 }
 
 export interface UpdateFriendInput {
@@ -148,6 +150,46 @@ export class FriendService {
       INSERT INTO friends (id, userId, name, birthday, relationship, profileImageUrl, createdAt, updatedAt)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(id, userId, input.name, input.birthday, input.relationship, input.profileImageUrl || null, now, now);
+
+    // Create preference categories and ranked items for likes
+    if (input.likes && input.likes.length > 0) {
+      for (const category of input.likes) {
+        const categoryId = uuidv4();
+        db.prepare(`
+          INSERT INTO preference_categories (id, friendId, name, categoryType)
+          VALUES (?, ?, ?, ?)
+        `).run(categoryId, id, category.name, 'like');
+
+        if (category.items) {
+          for (const item of category.items) {
+            db.prepare(`
+              INSERT INTO ranked_items (id, categoryId, name, tags, rank, description, source)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+            `).run(uuidv4(), categoryId, item.name, JSON.stringify(item.tags), item.rank, null, null);
+          }
+        }
+      }
+    }
+
+    // Create preference categories and ranked items for dislikes
+    if (input.dislikes && input.dislikes.length > 0) {
+      for (const category of input.dislikes) {
+        const categoryId = uuidv4();
+        db.prepare(`
+          INSERT INTO preference_categories (id, friendId, name, categoryType)
+          VALUES (?, ?, ?, ?)
+        `).run(categoryId, id, category.name, 'dislike');
+
+        if (category.items) {
+          for (const item of category.items) {
+            db.prepare(`
+              INSERT INTO ranked_items (id, categoryId, name, tags, rank, description, source)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+            `).run(uuidv4(), categoryId, item.name, JSON.stringify(item.tags), item.rank, null, null);
+          }
+        }
+      }
+    }
 
     return this.getById(id)!;
   }
