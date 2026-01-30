@@ -6,10 +6,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import searchRoutes from './routes/searchRoutes';
+import friendRoutes from './routes/friendRoutes';
+import giftRoutes from './routes/giftRoutes';
+import userRoutes from './routes/userRoutes';
 import { ApiResponse } from './types';
+import { initializeDatabase, seedDatabase } from './database/schema';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize database
+initializeDatabase();
+seedDatabase();
 
 // Middleware
 app.use(cors());
@@ -32,6 +40,9 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // API Routes
 app.use('/api/search', searchRoutes);
+app.use('/api/friends', friendRoutes);
+app.use('/api/gifts', giftRoutes);
+app.use('/api/users', userRoutes);
 
 // API documentation endpoint
 app.get('/api', (_req: Request, res: Response) => {
@@ -43,32 +54,37 @@ app.get('/api', (_req: Request, res: Response) => {
       health: 'GET /health',
       searchGifts: 'POST /api/search/gifts',
       webSearch: 'POST /api/search/web',
-    },
-    documentation: {
-      searchGifts: {
-        description: 'Search for gift ideas with context awareness',
-        body: {
-          query: 'string (required) - The gift search query',
-          context: {
-            personInterests: 'string[] - Interests of the person',
-            pastGifts: 'string[] - Gifts given previously',
-            occasion: 'string - The occasion (birthday, anniversary, etc.)',
-            budget: 'number - Maximum budget for gifts',
-          },
-          filters: {
-            category: 'string - Gift category',
-            maxPrice: 'number - Maximum price',
-            minRating: 'number - Minimum rating',
-          },
-          limit: 'number - Maximum number of results (default: 10)',
-        },
+      friends: {
+        list: 'GET /api/friends?userId={id}',
+        get: 'GET /api/friends/{id}',
+        create: 'POST /api/friends',
+        update: 'PUT /api/friends/{id}',
+        delete: 'DELETE /api/friends/{id}',
+        addPreference: 'POST /api/friends/{id}/preferences',
+        addNote: 'POST /api/friends/{id}/notes',
+        addDate: 'POST /api/friends/{id}/dates',
+        deleteNote: 'DELETE /api/friends/{friendId}/notes/{noteId}',
+        deleteDate: 'DELETE /api/friends/{friendId}/dates/{dateId}',
       },
-      webSearch: {
-        description: 'Perform a general web search',
-        body: {
-          query: 'string (required) - The search query',
-          limit: 'number - Maximum number of results (default: 10)',
-        },
+      gifts: {
+        list: 'GET /api/gifts?userId={id}',
+        listByFriend: 'GET /api/gifts/friend/{friendId}',
+        get: 'GET /api/gifts/{id}',
+        create: 'POST /api/gifts',
+        update: 'PUT /api/gifts/{id}',
+        delete: 'DELETE /api/gifts/{id}',
+        saveFromSearch: 'POST /api/gifts/from-search',
+        createSearchResult: 'POST /api/gifts/search-results',
+        getSearchResults: 'GET /api/gifts/search-results/{searchId}',
+        addFeedback: 'POST /api/gifts/search-results/{id}/feedback',
+      },
+      users: {
+        list: 'GET /api/users',
+        get: 'GET /api/users/{id}',
+        getByEmail: 'GET /api/users/email/{email}',
+        create: 'POST /api/users',
+        update: 'PUT /api/users/{id}',
+        delete: 'DELETE /api/users/{id}',
       },
     },
   } as ApiResponse<any>);
