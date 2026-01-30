@@ -285,11 +285,41 @@ export const useGiftStore = create<GiftStore>()(
 
       saveGiftToBackend: async (friendId, gift) => {
         set({ isSaving: true, error: null });
+
+        // Create local gift immediately (optimistic update)
+        const localId = crypto.randomUUID();
+        const savedGift: SavedGift = {
+          id: localId,
+          name: gift.name,
+          description: gift.description || "",
+          price: gift.price,
+          purchaseUrl: gift.purchaseUrl,
+          imageUrl: gift.imageUrl,
+          occasion: gift.occasion,
+          notes: gift.notes,
+          status: gift.status || "idea",
+          createdAt: new Date(),
+        };
+
+        // Add to local state immediately
+        set((state) => ({
+          people: state.people.map((p) =>
+            p.id === friendId
+              ? {
+                  ...p,
+                  savedGifts: [...(p.savedGifts || []), savedGift],
+                }
+              : p
+          ),
+          isSaving: false,
+        }));
+
+        // Try to sync to backend (non-blocking)
         try {
           const response = await giftsApi.createGift({
             friendId,
             name: gift.name,
-            description: gift.description,
+            description: gift.description || "",
             price: gift.price,
             purchaseUrl: gift.purchaseUrl,
             imageUrl: gift.imageUrl,
@@ -299,31 +329,27 @@ export const useGiftStore = create<GiftStore>()(
           });
 
           if (response.success && response.data) {
-            // Add to local person
-            const savedGift = giftsApi.backendGiftToSavedGift(response.data);
+            // Update local ID with backend ID
             set((state) => ({
               people: state.people.map((p) =>
                 p.id === friendId
                   ? {
                       ...p,
-                      savedGifts: [...(p.savedGifts || []), savedGift],
+                      savedGifts: (p.savedGifts || []).map((g) =>
+                        g.id === localId ? { ...g, id: response.data!.id } : g
+                      ),
                     }
                   : p
               ),
-              isSaving: false,
             }));
             return response.data.id;
-          } else {
-            throw new Error(response.error || "Failed to save gift");
           }
         } catch (error) {
-          console.error("Error saving gift to backend:", error);
-          set({
-            isSaving: false,
-            error: error instanceof Error ? error.message : "Failed to save gift",
-          });
-          throw error;
+          // Backend sync failed, but local save succeeded - that's OK
+          console.log("Backend sync failed, gift saved locally:", error);
         }
+
+        return localId;
       },
 
       deleteGiftFromBackend: async (giftId) => {
