@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Person } from "@/lib/types";
 import { useGiftStore } from "@/lib/store";
+import { API_BASE_URL } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -43,7 +44,7 @@ export function ChatInterface({ person, open, onOpenChange }: ChatInterfaceProps
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -53,6 +54,7 @@ export function ChatInterface({ person, open, onOpenChange }: ChatInterfaceProps
           currentInterests: person.interests,
           currentDislikes: person.dislikes,
           chatHistory: person.chatHistory.slice(-10),
+          personId: person.id,
         }),
       });
 

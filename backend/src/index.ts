@@ -11,11 +11,12 @@ import giftRoutes from './routes/giftRoutes';
 import userRoutes from './routes/userRoutes';
 import promptRoutes from './routes/promptRoutes';
 import agentRoutes from './routes/agentRoutes';
+import chatRoutes from './routes/chatRoutes';
 import { ApiResponse } from './types';
 import { initializeDatabase, seedDatabase } from './database/schema';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Initialize database
 initializeDatabase();
@@ -52,6 +53,7 @@ app.use('/api/gifts', giftRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/prompt', promptRoutes);
 app.use('/api/agent', agentRoutes);
+app.use('/api/chat', chatRoutes);
 
 // API documentation endpoint
 app.get('/api', (_req: Request, res: Response) => {
