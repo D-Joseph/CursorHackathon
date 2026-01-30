@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ShoppingProduct } from "@/lib/types";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 export async function POST(request: NextRequest) {
   try {
