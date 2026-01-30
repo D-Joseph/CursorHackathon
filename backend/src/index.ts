@@ -9,6 +9,7 @@ import searchRoutes from './routes/searchRoutes';
 import friendRoutes from './routes/friendRoutes';
 import giftRoutes from './routes/giftRoutes';
 import userRoutes from './routes/userRoutes';
+import promptRoutes from './routes/promptRoutes';
 import { ApiResponse } from './types';
 import { initializeDatabase, seedDatabase } from './database/schema';
 
@@ -43,6 +44,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api/friends', friendRoutes);
 app.use('/api/gifts', giftRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/prompt', promptRoutes);
 
 // API documentation endpoint
 app.get('/api', (_req: Request, res: Response) => {
@@ -86,6 +88,61 @@ app.get('/api', (_req: Request, res: Response) => {
         update: 'PUT /api/users/{id}',
         delete: 'DELETE /api/users/{id}',
       },
+      promptProcess: 'POST /api/prompt/process',
+      promptGiftSuggestions: 'POST /api/prompt/gift-suggestions',
+      promptReachout: 'POST /api/prompt/reachout',
+    },
+    documentation: {
+      searchGifts: {
+        description: 'Search for gift ideas with context awareness',
+        body: {
+          query: 'string (required) - The gift search query',
+          context: {
+            personInterests: 'string[] - Interests of the person',
+            pastGifts: 'string[] - Gifts given previously',
+            occasion: 'string - The occasion (birthday, anniversary, etc.)',
+            budget: 'number - Maximum budget for gifts',
+          },
+          filters: {
+            category: 'string - Gift category',
+            maxPrice: 'number - Maximum price',
+            minRating: 'number - Minimum rating',
+          },
+          limit: 'number - Maximum number of results (default: 10)',
+        },
+      },
+      webSearch: {
+        description: 'Perform a general web search',
+        body: {
+          query: 'string (required) - The search query',
+          limit: 'number - Maximum number of results (default: 10)',
+        },
+      },
+      promptProcess: {
+        description: 'Process a natural language prompt to extract timeline events, gift suggestions, and proactive actions',
+        body: {
+          prompt: 'string (required) - The natural language prompt',
+          friendId: 'string (optional) - ID of the friend being discussed',
+          userId: 'string (optional) - ID of the user making the request',
+        },
+      },
+      promptGiftSuggestions: {
+        description: 'Generate gift suggestions for a friend based on interests and context',
+        body: {
+          friendId: 'string (required) - ID of the friend',
+          interests: 'string[] - List of interests',
+          pastGifts: 'string[] (optional) - Gifts given previously',
+          occasion: 'string (optional) - The occasion',
+          budget: 'number (optional) - Maximum budget',
+        },
+      },
+      promptReachout: {
+        description: 'Generate a reachout suggestion based on last contact date',
+        body: {
+          friendId: 'string (required) - ID of the friend',
+          lastContact: 'string (required) - ISO date of last contact',
+        },
+      },
     },
   } as ApiResponse<any>);
 });
@@ -119,8 +176,12 @@ app.listen(PORT, () => {
 ║   Health:   http://localhost:${PORT}/health                     ║
 ║                                                               ║
 ║   Endpoints:                                                  ║
-║   • POST /api/search/gifts - Gift search with context         ║
-║   • POST /api/search/web  - General web search                ║
+║   • GET  /health           - Health check                      ║
+║   • POST /api/search/gifts - Gift search with context          ║
+║   • POST /api/search/web   - General web search                ║
+║   • POST /api/prompt/process - Process natural language        ║
+║   • POST /api/prompt/gift-suggestions - Gift suggestions       ║
+║   • POST /api/prompt/reachout - Reachout suggestions           ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
   `);
