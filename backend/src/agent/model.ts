@@ -407,3 +407,80 @@ export const searchTool = createToolDefinition({
     };
   },
 });
+
+/**
+ * Import the shopping search functionality
+ */
+import { searchShoppingItems } from '../tools/shopping';
+
+/**
+ * Input schema for shopping search tool
+ */
+export const ShoppingSearchInputSchema = z.object({
+  searchTerm: z.string().describe('The search term for shopping items (e.g., "lego toy", "wireless headphones")'),
+  maxResults: z.number().min(1).max(20).optional().default(10).describe('Maximum number of results to return'),
+  priceRange: z.object({
+    min: z.number().optional().describe('Minimum price in USD'),
+    max: z.number().optional().describe('Maximum price in USD'),
+  }).optional().describe('Optional price range filter for results'),
+  category: z.string().optional().describe('Category to filter results (e.g., "electronics", "clothing", "home")'),
+  brand: z.string().optional().describe('Brand preference to filter results'),
+  onlyReviewed: z.boolean().optional().default(false).describe('Whether to include only items with reviews/ratings'),
+  sortBy: z.enum(['relevance', 'price_asc', 'price_desc', 'rating', 'newest']).optional().default('relevance').describe('Sort order for results'),
+});
+
+export type ShoppingSearchInput = z.infer<typeof ShoppingSearchInputSchema>;
+
+/**
+ * Shopping search tool definition
+ * Uses the shopping search service to find products
+ */
+export const shoppingTool = createToolDefinition({
+  name: 'shopping_search',
+  description: 'Search for shopping items based on a search term. Use this tool when the user wants to find products to buy. Returns a list of products with prices, ratings, and links.',
+  inputSchema: ShoppingSearchInputSchema,
+  outputSchema: z.object({
+    success: z.boolean(),
+    products: z.array(
+      z.object({
+        name: z.string(),
+        price: z.number(),
+        rating: z.number().optional(),
+        reviews: z.number().optional(),
+        link: z.string(),
+        description: z.string().optional(),
+      })
+    ).optional(),
+    error: z.string().optional(),
+  }),
+  execute: async (input: ShoppingSearchInput): Promise<Record<string, unknown>> => {
+    const result = await searchShoppingItems({
+      searchTerm: input.searchTerm,
+      maxResults: input.maxResults,
+      priceRange: input.priceRange,
+      category: input.category,
+      brand: input.brand,
+      onlyReviewed: input.onlyReviewed,
+      sortBy: input.sortBy,
+    });
+
+    if (result.success && result.results.length > 0) {
+      return {
+        success: true,
+        products: result.results.map(item => ({
+          name: item.title,
+          price: item.price?.value ?? 0,
+          rating: item.rating?.score,
+          reviews: item.rating?.reviewCount,
+          link: item.url,
+          description: item.snippet,
+        })),
+      };
+    }
+
+    return {
+      success: false,
+      error: result.error || 'No products found',
+    };
+  },
+});
